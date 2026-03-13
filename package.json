@@ -1,0 +1,51 @@
+{
+  "name": "prepped",
+  "version": "1.0.0",
+  "description": "AI-powered mock interview platform with multi-agent analysis",
+  "license": "MIT",
+  "author": "Interview Studio Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rroberman/prepped.git"
+  },
+  "homepage": "https://github.com/rroberman/prepped",
+  "keywords": ["ai", "interview", "mock-interview", "agents", "nextjs"],
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "better-sqlite3": "^12.6.2",
+    "cheerio": "^1.2.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.34.2",
+    "lucide-react": "^0.575.0",
+    "nanoid": "^5.1.6",
+    "next": "16.1.6",
+    "openai": "^6.22.0",
+    "pdf-parse": "^2.4.5",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-dropzone": "^15.0.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.7.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

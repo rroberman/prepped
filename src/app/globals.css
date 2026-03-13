@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-background: #09090B;
+  --color-foreground: #FAFAFA;
+  --color-surface: #18181B;
+  --color-surface-light: #27272A;
+  --color-border: #27272A;
+  --color-border-light: #3F3F46;
+  --color-accent: #818CF8;
+  --color-accent-light: #A5B4FC;
+  --color-accent-dark: #6366F1;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+  --color-muted: #71717A;
+  --font-sans: var(--font-jakarta), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-light);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted);
+}
+
+/* Selection */
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
+}
+
+/* Print styles for saving report as PDF */
+@media print {
+  body {
+    background: white !important;
+    color: #1a1a1a !important;
+    font-size: 11pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print,
+  header {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+
+  [class*="bg-surface"],
+  [class*="bg-surface-light"] {
+    background: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+  }
+
+  [class*="border-border"] {
+    border-color: #dee2e6 !important;
+  }
+
+  [class*="text-foreground"],
+  [class*="text-sm"],
+  p, li, span, h1, h2, h3 {
+    color: #1a1a1a !important;
+  }
+
+  [class*="text-muted"] {
+    color: #6b7280 !important;
+  }
+
+  [class*="text-accent"] {
+    color: #4F46E5 !important;
+  }
+
+  [class*="text-success"] {
+    color: #059669 !important;
+  }
+
+  [class*="text-warning"] {
+    color: #d97706 !important;
+  }
+
+  [class*="text-danger"] {
+    color: #dc2626 !important;
+  }
+
+  [class*="overflow-hidden"] {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  [class*="rounded-xl"] {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  [class*="bg-success\\/10"] {
+    background: #d1fae5 !important;
+  }
+  [class*="bg-warning\\/10"] {
+    background: #fef3c7 !important;
+  }
+  [class*="bg-danger\\/10"] {
+    background: #fee2e2 !important;
+  }
+  [class*="bg-accent\\/10"],
+  [class*="bg-accent\\/5"] {
+    background: #e0e7ff !important;
+  }
+
+  svg circle[class*="text-surface-light"] {
+    color: #e5e7eb !important;
+  }
+
+  .recharts-wrapper {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -12,12 +12,14 @@ import {
   Minus,
   Target,
   BarChart3,
+  GitCompareArrows,
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { GroupInsights, HireDecision } from "@/types";
+import { SessionComparison } from "@/components/insights/session-comparison";
 
 const decisionConfig: Record<string, { label: string; variant: "success" | "accent" | "warning" | "danger" | "default" }> = {
   strong_hire: { label: "Strong Hire", variant: "success" },
@@ -64,6 +66,8 @@ export default function InsightsPage() {
   const [data, setData] = useState<GroupInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [compareA, setCompareA] = useState("");
+  const [compareB, setCompareB] = useState("");
 
   useEffect(() => {
     fetch(`/api/insights/${encodeURIComponent(groupId)}`)
@@ -323,6 +327,57 @@ export default function InsightsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Session Comparison */}
+        {trends.length >= 2 && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GitCompareArrows className="w-5 h-5 text-accent-light" />
+                  Compare Sessions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs text-muted mb-1">Session A</label>
+                    <select
+                      className="w-full rounded-lg border border-border bg-surface-light px-3 py-2 text-sm text-foreground"
+                      value={compareA}
+                      onChange={(e) => setCompareA(e.target.value)}
+                    >
+                      <option value="">Select session...</option>
+                      {trends.map((t) => (
+                        <option key={t.sessionId} value={t.sessionId} disabled={t.sessionId === compareB}>
+                          {formatDate(t.date)} - {displayName} ({t.difficulty})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted mb-1">Session B</label>
+                    <select
+                      className="w-full rounded-lg border border-border bg-surface-light px-3 py-2 text-sm text-foreground"
+                      value={compareB}
+                      onChange={(e) => setCompareB(e.target.value)}
+                    >
+                      <option value="">Select session...</option>
+                      {trends.map((t) => (
+                        <option key={t.sessionId} value={t.sessionId} disabled={t.sessionId === compareA}>
+                          {formatDate(t.date)} - {displayName} ({t.difficulty})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {compareA && compareB && compareA !== compareB && (
+                  <SessionComparison sessionIdA={compareA} sessionIdB={compareB} />
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
       </main>
     </div>
   );

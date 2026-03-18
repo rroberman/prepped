@@ -25,6 +25,13 @@ Afterward, a Hiring Committee report gives you a hire/no-hire decision with per-
 - Voice mode with browser speech recognition and TTS (free) or OpenAI TTS (natural voice)
 - Multi-language voice — English, Hebrew, Arabic, Spanish, French, German, Russian, Chinese, Japanese
 
+**Cross-Session Insights**
+- Sessions auto-grouped by CV and company — or manually labeled
+- Track recurring danger zones, consistent strengths, and resolved gaps across interviews
+- Skill coverage map — which skills got tested vs. identified but never probed
+- Difficulty progression — see when you're ready to move up
+- Side-by-side session comparison
+
 **Infrastructure**
 - Works with OpenAI, Anthropic, Google Gemini, OpenRouter, or local models via Ollama
 - SQLite database — no external services needed

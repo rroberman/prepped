@@ -54,6 +54,16 @@ Scout failure = everything downstream fails. Profiler failure = continue with ra
 - **Availability**: Voice toggle shown if browser supports SpeechRecognition. OpenAI TTS option shown only when OpenAI is configured (checked via `HEAD /api/tts`)
 - **TTS usage tracking**: Characters tracked in `tts_usage` table, included in cost estimates
 
+### Cross-Session Insights
+
+Sessions are auto-grouped by `cv_hash` (SHA-256 of CV text) and `company_domain` (parsed from job URL). Users can override with a manual `group_label`. Group IDs are composite strings: `auto:<domain>:<hash>` or `label:<label>`, URL-encoded for routes.
+
+- **Insights page** (`/insights/[groupId]`): performance trends, recurring danger zones, consistent strengths, resolved gaps, skill coverage map, question-level comparison by phase, difficulty progression
+- **History page**: grouped view with expandable cards, toggle to flat list
+- All insights derived from existing agent/report data — no new AI calls
+- Aggregation logic in `src/lib/insights/` module, separate from DB queries
+- Best outcome ranked by `ReportData.decision`: `strong_hire` > `hire` > `lean_hire` > `lean_no_hire` > `no_hire`
+
 ### Key Directories
 
 ```
@@ -67,7 +77,8 @@ src/
       tts/                      # OpenAI TTS proxy (POST) + availability check (HEAD)
       config/                   # Returns provider + model info
     session/[sessionId]/        # Dashboard, interview, report pages
-    history/                    # Past sessions list with aggregated cost summary
+    history/                    # Past sessions list with grouped view + cost summary
+    insights/[groupId]/         # Cross-session insights page
   lib/
     ai/
       llm-client.ts             # Public API: jsonCompletion, chatCompletion, streamChatCompletion
@@ -77,9 +88,10 @@ src/
       agents/                   # scout, profiler, auditor, strategist, coach, orchestrator
       interviewer.ts            # Interview response generation with difficulty
       report-generator.ts       # Hiring committee report
+    insights/                    # Cross-session grouping, aggregation, comparison
     db/
-      connection.ts             # SQLite init + migrations (incl. tts_usage table)
-      queries.ts                # All DB queries (incl. TTS usage tracking)
+      connection.ts             # SQLite init + migrations (incl. tts_usage, session groups)
+      queries.ts                # All DB queries (incl. TTS usage, group queries)
     scraper/job-scraper.ts      # Job posting + company context scraping
     pdf/parser.ts               # PDF text extraction
   types/

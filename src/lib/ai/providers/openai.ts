@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import type { LLMProvider, ChatMessage, CompletionOptions, StreamChunk } from "../llm-client";
+import type { LLMProvider, StreamChunk } from "../llm-client";
 
 interface OpenAIProviderConfig {
   apiKey: string;

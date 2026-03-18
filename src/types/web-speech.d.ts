@@ -38,12 +38,12 @@ interface SpeechRecognitionErrorEvent {
   message: string;
 }
 
-declare var SpeechRecognition: {
+declare const SpeechRecognition: {
   new (): SpeechRecognition;
   prototype: SpeechRecognition;
 };
 
-declare var webkitSpeechRecognition: {
+declare const webkitSpeechRecognition: {
   new (): SpeechRecognition;
   prototype: SpeechRecognition;
 };

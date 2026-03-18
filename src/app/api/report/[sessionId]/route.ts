@@ -5,6 +5,7 @@ import {
   getInterviewBySession,
   getMessagesByInterview,
   updateSession,
+  listSessions,
 } from "@/lib/db/queries";
 import { generateReport } from "@/lib/ai/report-generator";
 
@@ -48,6 +49,7 @@ export async function GET(
       difficulty: interview?.difficulty || "realistic",
       effective_difficulty: interview?.effective_difficulty || "realistic",
       interviewerScores,
+      completedSessionCount: listSessions().filter((s) => s.status === "completed").length,
     },
   });
 }

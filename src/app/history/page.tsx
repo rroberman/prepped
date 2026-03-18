@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -18,10 +18,16 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { Session, SessionGroup } from "@/types";
+import { HintList } from "@/components/ui/hint-banner";
+import { useHints } from "@/hooks/use-hints";
+import { getHistoryHints } from "@/lib/hints";
+import type { Session, SessionGroup, InterviewDifficulty } from "@/types";
 
 interface SessionWithUsage extends Session {
   tokenUsage: { prompt_tokens: number; completion_tokens: number; total_tokens: number; tts_characters: number };
+  interviewDifficulty: InterviewDifficulty | null;
+  reportDecision: string | null;
+  reportScore: number | null;
 }
 
 const MODEL_PRICING: Record<string, { input: number; output: number }> = {
@@ -154,6 +160,18 @@ export default function HistoryPage() {
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
+  const allHints = useMemo(() => getHistoryHints({
+    sessions: sessions.map((s) => ({
+      status: s.status,
+      difficulty: (s.interviewDifficulty || "realistic") as InterviewDifficulty,
+      decision: s.reportDecision,
+      score: s.reportScore,
+    })),
+    groups,
+    recurringDangerZones: [], // Would need cross-session analysis; keep simple for now
+  }), [sessions, groups]);
+  const { hints, dismiss } = useHints(allHints);
+
   useEffect(() => {
     fetch("/api/sessions/list")
       .then((res) => res.json())
@@ -267,6 +285,10 @@ export default function HistoryPage() {
                 </div>
               );
             })()}
+
+            {hints.length > 0 && (
+              <HintList hints={hints} onDismiss={dismiss} />
+            )}
 
             {/* View mode toggle */}
             {groups.length > 0 && (

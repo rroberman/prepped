@@ -1,5 +1,6 @@
 import { Radar, ShieldAlert, Crosshair, Gavel, History } from "lucide-react";
 import { UploadForm } from "@/components/landing/upload-form";
+import { LandingHints } from "@/components/landing/landing-hints";
 import Link from "next/link";
 
 const features = [
@@ -51,6 +52,7 @@ export default function LandingPage() {
             Upload your CV and a job listing. We{"'"}ll scrape the company, audit your resume,
             find your gaps, and run a realistic mock interview.
           </p>
+          <LandingHints />
           <UploadForm />
         </section>
 

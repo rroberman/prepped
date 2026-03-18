@@ -66,6 +66,18 @@ Sessions are auto-grouped by `cv_hash` (SHA-256 of CV text) and `company_domain`
 - Aggregation logic in `src/lib/insights/` module, separate from DB queries
 - Best outcome ranked by `ReportData.decision`: `strong_hire` > `hire` > `lean_hire` > `lean_no_hire` > `no_hire`
 
+### Smart Hints
+
+Contextual nudges shown across pages based on user's performance patterns and usage history. Pure function generators (no DB, no hooks) compute hints from data each page already fetches.
+
+- **Landing page**: suggests adaptive mode if user has sessions but never tried it
+- **Dashboard**: voice mode suggestion, same-company insights nudge, last report gap warnings
+- **History page**: difficulty upgrade suggestion, recurring danger zone warnings, improving trend detection
+- **Report page**: first interview encouragement, tough mode encouragement, score discrepancy insights (live vs committee)
+- **Dismissal**: localStorage-based (`prepped:dismissed-hints`), `useHints` hook filters dismissed hints
+- **UI**: `HintBanner` component with three variants (info/success/warning), dismissible with X button
+- **Testing**: Pure functions in `src/lib/hints.ts` tested independently in `src/lib/__tests__/hints.test.ts`
+
 ### Key Directories
 
 ```
@@ -90,6 +102,7 @@ src/
       agents/                   # scout, profiler, auditor, strategist, coach, orchestrator
       interviewer.ts            # Interview response generation with difficulty
       report-generator.ts       # Hiring committee report
+    hints.ts                      # Pure hint generation functions (landing, dashboard, history, report)
     insights/                    # Cross-session grouping, aggregation, comparison
     db/
       connection.ts             # SQLite init + migrations (incl. tts_usage, session groups)
@@ -99,9 +112,9 @@ src/
   types/
     index.ts                    # All TypeScript interfaces
     web-speech.d.ts             # Browser SpeechRecognition type declarations
-  hooks/                        # useAnalysisStream, useInterviewChat, useFileUpload, useVoiceMode
+  hooks/                        # useAnalysisStream, useInterviewChat, useFileUpload, useVoiceMode, useHints
   components/
-    ui/                         # Button, Card, Badge, Input, Progress, Textarea
+    ui/                         # Button, Card, Badge, Input, Progress, Textarea, HintBanner
     dashboard/                  # AgentCard, DangerZonesPanel, CoachPrepPanel, DifficultySelector
     interview/                  # ChatMessage, ChatInput, PhaseIndicator, VoiceControls
     report/                     # QuestionCard

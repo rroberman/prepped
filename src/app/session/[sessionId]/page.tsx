@@ -19,7 +19,8 @@ import {
 import Link from "next/link";
 import { CoachPrepPanel } from "@/components/dashboard/coach-prep-panel";
 import { DifficultySelector } from "@/components/dashboard/difficulty-selector";
-import type { AgentType, AuditorResult, CoachResult, InterviewDifficulty } from "@/types";
+import { DashboardHints } from "@/components/dashboard/dashboard-hints";
+import type { AgentType, AuditorResult, CoachResult, ScoutResult, InterviewDifficulty } from "@/types";
 
 const agentConfig: Record<AgentType, { title: string; description: string; icon: typeof Radar }> = {
   scout: {
@@ -57,6 +58,7 @@ export default function SessionDashboard() {
   const [difficulty, setDifficulty] = useState<InterviewDifficulty>("realistic");
   const { agents, isDone, completedCount, total, totalTokens } = useAnalysisStream(sessionId);
 
+  const scoutResult = agents.scout.result as ScoutResult | null;
   const auditorResult = agents.auditor.result as AuditorResult | null;
   const coachResult = agents.coach.result as CoachResult | null;
   const allCompleted = isDone && Object.values(agents).every(
@@ -84,6 +86,10 @@ export default function SessionDashboard() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
+        <DashboardHints
+          companyName={scoutResult?.company_name || null}
+          companyDomain={null}
+        />
         {/* Progress */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">

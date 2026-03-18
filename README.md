@@ -57,7 +57,7 @@ Before your interview starts, a pipeline of specialized agents works in parallel
 Five phases — warmup, technical deep dive, danger zones, system design, and closing. The interviewer follows the Strategist's plan, adapts to your answers, and only asks about what's actually in the job posting and your CV.
 
 <p align="center">
-  <img src="public/screenshots/03-interview.png" alt="Realistic AI interview with follow-up questions" width="720" />
+  <img src="public/screenshots/03-interview.gif" alt="Realistic AI interview with follow-up questions" width="720" />
 </p>
 
 ### 3. A hiring committee tells you the truth

@@ -36,6 +36,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000), upload a CV (PDF), paste a job URL, and go.
 
+### Try it without an API key
+
+Want to explore the UI first? Seed a demo session with pre-generated data:
+
+```bash
+npm run seed
+npm run dev
+```
+
+This creates a complete session — agent analysis, interview messages, and a hiring committee report — so you can click through everything without needing an LLM provider.
+
 ## How It Works
 
 ### 1. Five agents analyze everything
@@ -102,7 +113,9 @@ Set `LLM_PROVIDER` in `.env.local`:
 
 ## Contributing
 
-Contributions welcome. Some areas that could use help:
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions, testing, and PR guidelines.
+
+Some areas that could use help:
 
 - **Better scraping** — many job sites block scrapers or render with JS
 - **More LLM providers** — AWS Bedrock, Azure OpenAI, Groq, etc.

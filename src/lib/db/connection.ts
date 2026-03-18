@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
+import crypto from "crypto";
 
 let db: Database.Database | null = null;
 
@@ -12,6 +13,8 @@ export function getDb(): Database.Database {
     initializeSchema(db);
     migrateTokenColumns(db);
     migrateTtsTable(db);
+    migrateSessionGroups(db);
+    backfillSessionGroups(db);
   }
   return db;
 }
@@ -47,6 +50,43 @@ function migrateTtsTable(db: Database.Database) {
     `);
     db.exec(`CREATE INDEX IF NOT EXISTS idx_tts_usage_session ON tts_usage(session_id)`);
   } catch { /* table already exists */ }
+}
+
+function migrateSessionGroups(db: Database.Database) {
+  const migrations = [
+    "ALTER TABLE sessions ADD COLUMN cv_hash TEXT",
+    "ALTER TABLE sessions ADD COLUMN company_domain TEXT",
+    "ALTER TABLE sessions ADD COLUMN group_label TEXT",
+  ];
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
+  }
+  try {
+    db.exec("CREATE INDEX IF NOT EXISTS idx_sessions_group ON sessions(company_domain, cv_hash)");
+  } catch { /* index already exists */ }
+}
+
+function backfillSessionGroups(db: Database.Database) {
+  const sessions = db.prepare(
+    "SELECT id, cv_text, job_url FROM sessions WHERE cv_hash IS NULL OR company_domain IS NULL"
+  ).all() as Array<{ id: string; cv_text: string | null; job_url: string | null }>;
+
+  const update = db.prepare(
+    "UPDATE sessions SET cv_hash = ?, company_domain = ? WHERE id = ?"
+  );
+
+  for (const session of sessions) {
+    const cvHash = session.cv_text
+      ? crypto.createHash("sha256").update(session.cv_text).digest("hex")
+      : null;
+    let companyDomain: string | null = null;
+    if (session.job_url) {
+      try {
+        companyDomain = new URL(session.job_url).hostname.replace(/^www\./, "");
+      } catch { /* invalid URL */ }
+    }
+    update.run(cvHash, companyDomain, session.id);
+  }
 }
 
 function initializeSchema(db: Database.Database) {

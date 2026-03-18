@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -20,8 +20,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { QuestionCard } from "@/components/report/question-card";
+import { HintList } from "@/components/ui/hint-banner";
+import { useHints } from "@/hooks/use-hints";
+import { getReportHints } from "@/lib/hints";
 import { cn } from "@/lib/utils";
-import type { ReportData } from "@/types";
+import type { ReportData, InterviewDifficulty } from "@/types";
 
 const decisionConfig = {
   strong_hire: { label: "STRONG HIRE", color: "text-success", bg: "bg-success/10", border: "border-success/30" },
@@ -66,7 +69,7 @@ export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [tokenUsage, setTokenUsage] = useState<{ prompt_tokens: number; completion_tokens: number; total_tokens: number; tts_characters?: number } | null>(null);
   const [modelInfo, setModelInfo] = useState<{ provider: string; model: string } | null>(null);
-  const [interviewMeta, setInterviewMeta] = useState<{ difficulty: string; effective_difficulty: string; interviewerScores: number[] } | null>(null);
+  const [interviewMeta, setInterviewMeta] = useState<{ difficulty: string; effective_difficulty: string; interviewerScores: number[]; completedSessionCount?: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPrintMode, setIsPrintMode] = useState(false);
@@ -99,6 +102,19 @@ export default function ReportPage() {
         setLoading(false);
       });
   }, [sessionId]);
+
+  const allReportHints = useMemo(() => {
+    if (!report) return [];
+    const committeeScores = report.question_feedback.map((q) => q.score);
+    return getReportHints({
+      decision: report.decision,
+      difficulty: (interviewMeta?.difficulty || "realistic") as InterviewDifficulty,
+      completedSessionCount: interviewMeta?.completedSessionCount || 1,
+      interviewerScores: interviewMeta?.interviewerScores || [],
+      committeeScores,
+    });
+  }, [report, interviewMeta]);
+  const { hints: reportHints, dismiss: dismissHint } = useHints(allReportHints);
 
   if (loading) {
     return (
@@ -167,6 +183,10 @@ export default function ReportPage() {
             </div>
           </Card>
         </motion.div>
+
+        {reportHints.length > 0 && (
+          <HintList hints={reportHints} onDismiss={dismissHint} />
+        )}
 
         {/* Danger Zone Performance + Technical Gaps */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

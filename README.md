@@ -87,6 +87,11 @@ Afterward, you get a hire/no-hire decision with per-question feedback, danger zo
 - Voice mode with browser speech recognition and TTS (free) or OpenAI TTS (natural voice)
 - Multi-language voice — English, Hebrew, Arabic, Spanish, French, German, Russian, Chinese, Japanese
 
+**Smart Hints**
+- Contextual nudges based on your performance patterns — suggests difficulty upgrades, flags recurring weak spots, celebrates improving trends
+- Encouragement after tough interviews, score discrepancy insights (interviewer vs. committee), and voice mode discovery
+- Dismissible banners that stay out of the way
+
 **Cross-Session Insights**
 - Sessions auto-grouped by CV and company — or manually labeled
 - Track recurring danger zones, consistent strengths, and resolved gaps across interviews

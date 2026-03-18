@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listSessions, getSessionTokenUsage } from "@/lib/db/queries";
+import { listSessions, getSessionTokenUsage, getInterviewBySession, getReportBySession } from "@/lib/db/queries";
 import { getSessionGroups } from "@/lib/insights";
 
 export async function GET() {
@@ -16,7 +16,16 @@ export async function GET() {
 
   const sessionsWithUsage = sessions.map((session) => {
     const usage = getSessionTokenUsage(session.id);
-    return { ...session, tokenUsage: usage };
+    const interview = getInterviewBySession(session.id);
+    const report = getReportBySession(session.id);
+    const reportData = report?.report_data ? JSON.parse(report.report_data) : null;
+    return {
+      ...session,
+      tokenUsage: usage,
+      interviewDifficulty: interview?.difficulty || null,
+      reportDecision: reportData?.decision || null,
+      reportScore: report?.overall_score || null,
+    };
   });
 
   const groups = getSessionGroups();

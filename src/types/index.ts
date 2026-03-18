@@ -8,6 +8,9 @@ export interface Session {
   status: "pending" | "analyzing" | "ready" | "interviewing" | "completed";
   created_at: string;
   updated_at: string;
+  cv_hash: string | null;
+  company_domain: string | null;
+  group_label: string | null;
 }
 
 export interface TokenUsage {
@@ -214,6 +217,71 @@ export interface DangerZoneVerdict {
   zone: string;
   result: "passed" | "partially_passed" | "failed";
   detail: string;
+}
+
+// --- Cross-Session Insights Types ---
+
+export type HireDecision = "strong_hire" | "hire" | "lean_hire" | "lean_no_hire" | "no_hire";
+
+export const DECISION_RANK: Record<HireDecision, number> = {
+  strong_hire: 5,
+  hire: 4,
+  lean_hire: 3,
+  lean_no_hire: 2,
+  no_hire: 1,
+};
+
+export interface SessionGroup {
+  groupId: string;
+  companyName: string | null;
+  company_domain: string | null;
+  cvHash: string | null;
+  groupLabel: string | null;
+  sessionCount: number;
+  dateRange: { first: string; last: string };
+  bestOutcome: HireDecision | null;
+}
+
+export interface DangerZoneFrequency {
+  area: string;
+  count: number;
+  sessions: number;
+  resolved: boolean;
+}
+
+export interface StrengthFrequency {
+  strength: string;
+  count: number;
+}
+
+export interface SkillCoverage {
+  skill: string;
+  tested: boolean;
+  scores: number[];
+}
+
+export interface SessionTrend {
+  sessionId: string;
+  date: string;
+  difficulty: InterviewDifficulty;
+  decision: HireDecision | null;
+  overallScore: number | null;
+  dangerZoneResults: DangerZoneVerdict[];
+}
+
+export interface DifficultyBreakdown {
+  difficulty: InterviewDifficulty;
+  sessions: number;
+  passRate: number;
+}
+
+export interface GroupInsights {
+  group: SessionGroup;
+  trends: SessionTrend[];
+  dangerZones: DangerZoneFrequency[];
+  strengths: StrengthFrequency[];
+  skillCoverage: SkillCoverage[];
+  difficultyBreakdown: DifficultyBreakdown[];
 }
 
 // SSE event types

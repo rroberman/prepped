@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { nanoid } from "nanoid";
 import { getDb } from "./connection";
 import type { Session, Analysis, Interview, Message, Report, AgentType } from "@/types";
@@ -6,9 +7,14 @@ import type { Session, Analysis, Interview, Message, Report, AgentType } from "@
 export function createSession(cvText: string, cvFilename: string, jobUrl: string): Session {
   const db = getDb();
   const id = nanoid();
+  const cvHash = crypto.createHash("sha256").update(cvText).digest("hex");
+  let companyDomain: string | null = null;
+  try {
+    companyDomain = new URL(jobUrl).hostname.replace(/^www\./, "");
+  } catch { /* invalid URL */ }
   db.prepare(
-    `INSERT INTO sessions (id, cv_text, cv_filename, job_url) VALUES (?, ?, ?, ?)`
-  ).run(id, cvText, cvFilename, jobUrl);
+    `INSERT INTO sessions (id, cv_text, cv_filename, job_url, cv_hash, company_domain) VALUES (?, ?, ?, ?, ?, ?)`
+  ).run(id, cvText, cvFilename, jobUrl, cvHash, companyDomain);
   return getSession(id)!;
 }
 
@@ -17,7 +23,7 @@ export function getSession(id: string): Session | null {
   return db.prepare(`SELECT * FROM sessions WHERE id = ?`).get(id) as Session | null;
 }
 
-export function updateSession(id: string, updates: Partial<Pick<Session, "status" | "job_title" | "company_name">>) {
+export function updateSession(id: string, updates: Partial<Pick<Session, "status" | "job_title" | "company_name" | "group_label">>) {
   const db = getDb();
   const fields = Object.entries(updates)
     .filter(([, v]) => v !== undefined)
@@ -33,6 +39,26 @@ export function updateSession(id: string, updates: Partial<Pick<Session, "status
 export function listSessions(): Session[] {
   const db = getDb();
   return db.prepare(`SELECT * FROM sessions ORDER BY created_at DESC`).all() as Session[];
+}
+
+export function getSessionsByGroup(groupId: string): Session[] {
+  const db = getDb();
+  if (groupId.startsWith("label:")) {
+    const label = groupId.slice(6);
+    return db.prepare(
+      `SELECT * FROM sessions WHERE group_label = ? ORDER BY created_at ASC`
+    ).all(label) as Session[];
+  }
+  if (groupId.startsWith("auto:")) {
+    const parts = groupId.slice(5);
+    const separatorIdx = parts.indexOf(":");
+    const domain = parts.slice(0, separatorIdx);
+    const hash = parts.slice(separatorIdx + 1);
+    return db.prepare(
+      `SELECT * FROM sessions WHERE company_domain = ? AND cv_hash = ? AND group_label IS NULL ORDER BY created_at ASC`
+    ).all(domain, hash) as Session[];
+  }
+  return [];
 }
 
 export function deleteSession(id: string) {

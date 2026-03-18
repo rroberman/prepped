@@ -41,6 +41,9 @@ yarn-error.log*
 # dev scripts
 /scripts
 
+# docs
+/docs
+
 # vercel
 .vercel
 

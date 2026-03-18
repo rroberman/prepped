@@ -1,22 +1,72 @@
-# Prepped
+<p align="center">
+  <h1 align="center">Prepped</h1>
+  <p align="center">
+    AI-powered mock interviews that actually know where to challenge you
+  </p>
+</p>
 
-An AI-powered mock interview platform that actually does its homework on you. Upload your CV and a job link — five AI agents analyze the company, audit your resume, find your weak spots, and build an interviewer that pressure-tests exactly where you'll get challenged.
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &nbsp;&bull;&nbsp;
+  <a href="#how-it-works">How It Works</a> &nbsp;&bull;&nbsp;
+  <a href="#features">Features</a> &nbsp;&bull;&nbsp;
+  <a href="#llm-providers">LLM Providers</a> &nbsp;&bull;&nbsp;
+  <a href="#contributing">Contributing</a>
+</p>
 
-This is not a generic "tell me about yourself" chatbot. The interviewer knows the company's tech stack, has read your CV, and has a strategy for exposing your gaps.
+---
+
+Upload your CV and a job link. Five AI agents analyze the company, audit your resume, find your weak spots, and build an interviewer with a strategy for exposing your gaps.
+
+This is not a generic "tell me about yourself" chatbot. The interviewer knows the company's tech stack, has read your CV, and knows exactly where to push.
+
+<p align="center">
+  <img src="public/screenshots/01-landing.png" alt="Upload your CV and job URL" width="720" />
+</p>
+
+## Quick Start
+
+```bash
+git clone https://github.com/rroberman/prepped.git
+cd prepped
+npm install
+cp .env.example .env.local
+# Edit .env.local and add your API key
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000), upload a CV (PDF), paste a job URL, and go.
 
 ## How It Works
 
-Five agents run in waves before your interview begins:
+### 1. Five agents analyze everything
 
-1. **Scout** scrapes the job posting, company site, and engineering blog to understand what they actually use and care about
-2. **Profiler** reads your CV like a skeptical hiring manager — spotting red flags, title inflation, and gaps
-3. **Auditor** cross-references your CV against the job requirements to find your danger zones
-4. **Strategist** builds the interviewer's game plan — who they are, where to focus, when to push back
-5. **Coach** prepares you with talking points, stories to practice, and strategies for handling your weak spots
+Before your interview starts, a pipeline of specialized agents works in parallel waves:
 
-Then the interview. Five phases — warmup, technical deep dive, danger zones, system design, and closing. The interviewer follows the Strategist's plan, adapts to your answers, and only asks about what's actually in the job posting and your CV.
+- **Scout** scrapes the job posting, company site, and engineering blog
+- **Profiler** reads your CV like a skeptical hiring manager
+- **Auditor** cross-references your CV against the job to find danger zones
+- **Strategist** builds the interviewer's game plan
+- **Coach** prepares you with talking points and strategies for weak spots
 
-Afterward, a Hiring Committee report gives you a hire/no-hire decision with per-question feedback, technical gaps, and recommendations.
+<p align="center">
+  <img src="public/screenshots/02-analysis.png" alt="Five agents analyzing in parallel waves" width="720" />
+</p>
+
+### 2. A real interview, not a quiz
+
+Five phases — warmup, technical deep dive, danger zones, system design, and closing. The interviewer follows the Strategist's plan, adapts to your answers, and only asks about what's actually in the job posting and your CV.
+
+<p align="center">
+  <img src="public/screenshots/03-interview.png" alt="Realistic AI interview with follow-up questions" width="720" />
+</p>
+
+### 3. A hiring committee tells you the truth
+
+Afterward, you get a hire/no-hire decision with per-question feedback, danger zone results, technical gaps, and specific recommendations for what to work on.
+
+<p align="center">
+  <img src="public/screenshots/04-report.png" alt="Hiring committee report with detailed feedback" width="720" />
+</p>
 
 ## Features
 
@@ -37,19 +87,6 @@ Afterward, a Hiring Committee report gives you a hire/no-hire decision with per-
 - SQLite database — no external services needed
 - Fully local — your CV and data stay on your machine
 - Token usage tracking with estimated cost per session
-
-## Quick Start
-
-```bash
-git clone https://github.com/rroberman/prepped.git
-cd prepped
-npm install
-cp .env.example .env.local
-# Edit .env.local and add your API key
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000), upload a CV (PDF), paste a job URL, and go.
 
 ## LLM Providers
 

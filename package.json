@@ -9,7 +9,13 @@
     "url": "https://github.com/rroberman/prepped.git"
   },
   "homepage": "https://github.com/rroberman/prepped",
-  "keywords": ["ai", "interview", "mock-interview", "agents", "nextjs"],
+  "keywords": [
+    "ai",
+    "interview",
+    "mock-interview",
+    "agents",
+    "nextjs"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

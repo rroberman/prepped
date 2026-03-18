@@ -12,6 +12,7 @@ interface QuestionCardProps {
   feedback: QuestionFeedback;
   index: number;
   forceExpanded?: boolean;
+  interviewerScore?: number | null;
 }
 
 const verdictConfig = {
@@ -21,10 +22,13 @@ const verdictConfig = {
   "Red Flag": { variant: "danger" as const },
 };
 
-export function QuestionCard({ feedback, index, forceExpanded }: QuestionCardProps) {
+export function QuestionCard({ feedback, index, forceExpanded, interviewerScore }: QuestionCardProps) {
   const [expanded, setExpanded] = useState(forceExpanded ?? false);
 
   const scoreVariant = feedback.score >= 7 ? "success" : feedback.score >= 5 ? "warning" : "danger";
+  const interviewerScoreVariant = interviewerScore != null
+    ? (interviewerScore >= 7 ? "success" : interviewerScore >= 5 ? "warning" : "danger")
+    : null;
   const vc = verdictConfig[feedback.verdict as keyof typeof verdictConfig] || { variant: "default" as const };
 
   return (
@@ -39,9 +43,16 @@ export function QuestionCard({ feedback, index, forceExpanded }: QuestionCardPro
           className="w-full flex items-start justify-between gap-4 text-left cursor-pointer"
         >
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <Badge variant="accent">{feedback.phase}</Badge>
-              <Badge variant={scoreVariant}>{feedback.score}/10</Badge>
+              {interviewerScore != null && interviewerScoreVariant && (
+                <Badge variant={interviewerScoreVariant} title="Interviewer's real-time assessment of your answer">
+                  Live: {interviewerScore}/10
+                </Badge>
+              )}
+              <Badge variant={scoreVariant} title="Hiring committee's retrospective assessment">
+                Committee: {feedback.score}/10
+              </Badge>
               <Badge variant={vc.variant}>{feedback.verdict}</Badge>
             </div>
             <p className="text-sm font-medium" dir="auto">{feedback.question}</p>

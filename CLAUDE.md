@@ -41,8 +41,10 @@ Scout failure = everything downstream fails. Profiler failure = continue with ra
 ### Interview
 
 - 5 phases: warmup → technical_deep_dive → danger_zones → system_design → closing
-- 3 difficulty levels: friendly / realistic / tough (stored on interview record)
-- Streaming responses via SSE
+- 4 difficulty levels: friendly / realistic / tough / adaptive (stored on interview record)
+- **Adaptive difficulty**: starts at realistic, shifts up/down based on answer quality. Uses `[SCORE:X]` tag at end of each interviewer response to rate the candidate's previous answer (1-10). Rolling window of last 3 scores: avg >= 8 → escalate, avg <= 3 → de-escalate. `effective_difficulty` column tracks current level. Score tag is parsed server-side and stripped before sending to client
+- **Real-time quality scoring**: All difficulty modes get per-answer scoring (stored as `quality_score` on messages table). Scores shown in the report alongside the committee's retrospective scores ("Live" vs "Committee")
+- Streaming responses via SSE (includes `replace` event to strip score tags, `effectiveDifficulty` in `done` event for adaptive mode)
 - Interviewer persona/tone driven by Strategist output
 - Optional voice mode: STT (browser) + TTS (browser or OpenAI)
 
@@ -113,7 +115,7 @@ src/
 - **LLM provider abstraction**: `llm-client.ts` exports `jsonCompletion`, `chatCompletion`, `streamChatCompletion`. Provider chosen via `LLM_PROVIDER` env var. OpenAI provider also backs Gemini, Ollama, and OpenRouter via baseURL override. Streaming returns normalized `StreamChunk { content, usage? }` — not provider-specific types
 - **Adding a new LLM provider**: Create a file in `providers/` implementing the `LLMProvider` interface, add a case in `getProvider()` in `llm-client.ts`
 - **SSE pattern**: Analysis route uses `ReadableStream` + `TextEncoder` to push `data: JSON\n\n` events. Client uses `EventSource`
-- **Interview streaming**: Chat route uses `ReadableStream` with chunked `data:` events (delta, done, complete, error). Client reads via `ReadableStream.getReader()`
+- **Interview streaming**: Chat route uses `ReadableStream` with chunked `data:` events (delta, replace, done, complete, error). `replace` swaps full content (used to strip score tags). `done` includes optional `effectiveDifficulty` for adaptive mode. Client reads via `ReadableStream.getReader()`
 - **Optimistic UI**: Interview chat adds candidate messages immediately, then streams interviewer response in-place
 - **Error handling in agents**: 3 retries with exponential backoff in each provider. Pipeline uses `Promise.allSettled` for parallel waves
 - **Prompt discipline**: Scout and Auditor prompts are strict about only using explicitly stated information from job postings — no inference from company reputation. Interviewer only references technologies listed in job requirements

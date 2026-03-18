@@ -33,7 +33,10 @@ export interface Analysis {
 
 export type AgentType = "scout" | "profiler" | "auditor" | "strategist" | "coach";
 
-export type InterviewDifficulty = "friendly" | "realistic" | "tough";
+export type InterviewDifficulty = "friendly" | "realistic" | "tough" | "adaptive";
+
+/** For adaptive mode, the actual difficulty level currently in effect */
+export type EffectiveDifficulty = "friendly" | "realistic" | "tough";
 
 export interface Interview {
   id: string;
@@ -42,6 +45,7 @@ export interface Interview {
   current_phase: InterviewPhase;
   question_count: number;
   difficulty: InterviewDifficulty;
+  effective_difficulty: EffectiveDifficulty;
   started_at: string;
   ended_at: string | null;
 }
@@ -63,6 +67,7 @@ export interface Message {
   created_at: string;
   prompt_tokens: number;
   completion_tokens: number;
+  quality_score: number | null;
 }
 
 export interface Report {

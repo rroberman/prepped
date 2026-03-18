@@ -113,9 +113,10 @@ export function getAnalysisByType(sessionId: string, agentType: AgentType): Anal
 export function createInterview(sessionId: string, difficulty: string = "realistic"): Interview {
   const db = getDb();
   const id = nanoid();
+  const effectiveDifficulty = difficulty === "adaptive" ? "realistic" : difficulty;
   db.prepare(
-    `INSERT INTO interviews (id, session_id, difficulty) VALUES (?, ?, ?)`
-  ).run(id, sessionId, difficulty);
+    `INSERT INTO interviews (id, session_id, difficulty, effective_difficulty) VALUES (?, ?, ?, ?)`
+  ).run(id, sessionId, difficulty, effectiveDifficulty);
   return db.prepare(`SELECT * FROM interviews WHERE id = ?`).get(id) as Interview;
 }
 
@@ -128,7 +129,7 @@ export function getInterviewBySession(sessionId: string): Interview | null {
 
 export function updateInterview(
   id: string,
-  updates: Partial<Pick<Interview, "status" | "current_phase" | "question_count" | "ended_at">>
+  updates: Partial<Pick<Interview, "status" | "current_phase" | "question_count" | "ended_at" | "effective_difficulty">>
 ) {
   const db = getDb();
   const fields = Object.entries(updates)
@@ -146,13 +147,14 @@ export function createMessage(
   content: string,
   phase: string,
   evaluation?: string,
-  tokenUsage?: { prompt_tokens: number; completion_tokens: number }
+  tokenUsage?: { prompt_tokens: number; completion_tokens: number },
+  qualityScore?: number | null
 ): Message {
   const db = getDb();
   const id = nanoid();
   db.prepare(
-    `INSERT INTO messages (id, interview_id, role, content, phase, evaluation, prompt_tokens, completion_tokens) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(id, interviewId, role, content, phase, evaluation || null, tokenUsage?.prompt_tokens ?? 0, tokenUsage?.completion_tokens ?? 0);
+    `INSERT INTO messages (id, interview_id, role, content, phase, evaluation, prompt_tokens, completion_tokens, quality_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(id, interviewId, role, content, phase, evaluation || null, tokenUsage?.prompt_tokens ?? 0, tokenUsage?.completion_tokens ?? 0, qualityScore ?? null);
   return db.prepare(`SELECT * FROM messages WHERE id = ?`).get(id) as Message;
 }
 

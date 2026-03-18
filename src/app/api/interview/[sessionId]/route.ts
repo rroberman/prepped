@@ -6,7 +6,8 @@ import {
   getMessagesByInterview,
   updateInterview,
 } from "@/lib/db/queries";
-import { generateInterviewerResponse, isInterviewComplete } from "@/lib/ai/interviewer";
+import { generateInterviewerResponse, isInterviewComplete, parseScoreTag, computeAdaptiveShift } from "@/lib/ai/interviewer";
+import type { EffectiveDifficulty } from "@/types";
 
 export async function POST(
   request: NextRequest,
@@ -86,13 +87,46 @@ export async function POST(
           }
         }
 
+        // Parse score tag from the response and strip it
+        const { text: cleanContent, score } = parseScoreTag(fullContent);
+
+        // Send a correction delta to remove the score tag from the client display
+        if (score !== null && cleanContent.length < fullContent.length) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: "replace", content: cleanContent })}\n\n`)
+          );
+        }
+
         const phase = nextPhase || interview.current_phase;
         const usage = getUsage();
-        createMessage(interview.id, "interviewer", fullContent, phase, undefined, usage);
+        createMessage(interview.id, "interviewer", cleanContent, phase, undefined, usage, score);
+
+        // Handle adaptive difficulty shifting
+        let effectiveDifficulty: EffectiveDifficulty | undefined;
+        if (interview.difficulty === "adaptive" && score !== null) {
+          const messages = getMessagesByInterview(interview.id);
+          const recentScores = messages
+            .filter((m) => m.role === "interviewer" && m.quality_score !== null)
+            .map((m) => m.quality_score as number);
+          // Include the score we just got
+          recentScores.push(score);
+          const newDifficulty = computeAdaptiveShift(
+            recentScores,
+            (interview.effective_difficulty as EffectiveDifficulty) || "realistic"
+          );
+          if (newDifficulty) {
+            updateInterview(interview.id, { effective_difficulty: newDifficulty });
+            effectiveDifficulty = newDifficulty;
+          }
+        }
 
         controller.enqueue(
           encoder.encode(
-            `data: ${JSON.stringify({ type: "done", phase: nextPhase || interview.current_phase })}\n\n`
+            `data: ${JSON.stringify({
+              type: "done",
+              phase: nextPhase || interview.current_phase,
+              ...(effectiveDifficulty ? { effectiveDifficulty } : {}),
+            })}\n\n`
           )
         );
       } catch (error) {

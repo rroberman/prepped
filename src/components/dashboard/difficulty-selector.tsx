@@ -8,21 +8,30 @@ interface DifficultySelectorProps {
   onChange: (value: InterviewDifficulty) => void;
 }
 
-const options: { value: InterviewDifficulty; label: string; description: string }[] = [
+const options: { value: InterviewDifficulty; label: string; description: string; color: string }[] = [
   {
     value: "friendly",
     label: "Friendly",
     description: "Encouraging, hints when you struggle",
+    color: "bg-success/10 text-success",
   },
   {
     value: "realistic",
     label: "Realistic",
     description: "Fair but expects specifics",
+    color: "bg-accent/10 text-accent-light",
   },
   {
     value: "tough",
     label: "Tough",
     description: "High-bar, challenges everything",
+    color: "bg-danger/10 text-danger",
+  },
+  {
+    value: "adaptive",
+    label: "Adaptive",
+    description: "Adjusts to your performance",
+    color: "bg-purple-500/10 text-purple-400",
   },
 ];
 
@@ -38,11 +47,7 @@ export function DifficultySelector({ value, onChange }: DifficultySelectorProps)
             className={cn(
               "px-4 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
               value === option.value
-                ? option.value === "friendly"
-                  ? "bg-success/10 text-success"
-                  : option.value === "realistic"
-                  ? "bg-accent/10 text-accent-light"
-                  : "bg-danger/10 text-danger"
+                ? option.color
                 : "text-muted hover:text-foreground hover:bg-surface-light"
             )}
           >

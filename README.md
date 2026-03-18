@@ -82,7 +82,8 @@ Afterward, you get a hire/no-hire decision with per-question feedback, danger zo
 ## Features
 
 **Interview**
-- Three difficulty levels — Friendly (practice), Realistic (standard), Tough (FAANG-level)
+- Four difficulty levels — Friendly (practice), Realistic (standard), Tough (FAANG-level), Adaptive (adjusts to your performance)
+- Adaptive mode starts at Realistic and escalates or de-escalates based on your answer quality — with dual scoring in the report (interviewer's live assessment vs. committee retrospective)
 - Voice mode with browser speech recognition and TTS (free) or OpenAI TTS (natural voice)
 - Multi-language voice — English, Hebrew, Arabic, Spanish, French, German, Russian, Chinese, Japanese
 

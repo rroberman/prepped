@@ -24,6 +24,7 @@ export default function InterviewPage() {
     currentPhase,
     isComplete,
     error,
+    effectiveDifficulty,
     startInterview,
     sendMessage,
     endInterview,
@@ -88,6 +89,23 @@ export default function InterviewPage() {
           </div>
           <div className="flex items-center gap-4">
             <PhaseIndicator currentPhase={currentPhase} />
+            {difficulty === "adaptive" && effectiveDifficulty && (
+              <motion.span
+                key={effectiveDifficulty}
+                initial={{ scale: 1.15, opacity: 0.7 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                  effectiveDifficulty === "friendly"
+                    ? "bg-success/10 text-success"
+                    : effectiveDifficulty === "tough"
+                    ? "bg-danger/10 text-danger"
+                    : "bg-accent/10 text-accent-light"
+                }`}
+              >
+                {effectiveDifficulty.charAt(0).toUpperCase() + effectiveDifficulty.slice(1)}
+              </motion.span>
+            )}
             <Button
               variant="danger"
               size="sm"

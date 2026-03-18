@@ -8,6 +8,7 @@ import {
 import type {
   InterviewPhase,
   InterviewDifficulty,
+  EffectiveDifficulty,
   ScoutResult,
   AuditorResult,
   StrategistResult,
@@ -48,7 +49,7 @@ export function determineNextPhase(messages: Message[], currentPhase: InterviewP
   return null;
 }
 
-const DIFFICULTY_INSTRUCTIONS: Record<InterviewDifficulty, string> = {
+const DIFFICULTY_INSTRUCTIONS: Record<EffectiveDifficulty, string> = {
   friendly: `DIFFICULTY: FRIENDLY MODE
 - Be encouraging and supportive. When they give a decent answer, acknowledge what they got right before probing further.
 - If they struggle, offer a gentle hint or rephrase the question to help them.
@@ -75,7 +76,7 @@ function buildSystemPrompt(
   auditor: AuditorResult,
   strategist: StrategistResult,
   currentPhase: InterviewPhase,
-  difficulty: InterviewDifficulty
+  difficulty: EffectiveDifficulty
 ): string {
   const dangerZonesBlock = auditor.danger_zones
     .map((dz) => `  - [${dz.severity}] ${dz.area}: they have "${dz.candidate_has}" but we need "${dz.company_needs}"\n    Probing Qs: ${dz.probing_questions.join(" | ")}`)
@@ -133,7 +134,11 @@ RULES:
 
 ${DIFFICULTY_INSTRUCTIONS[difficulty]}
 
-OVERALL STRATEGY: ${strategist.overall_strategy}`;
+OVERALL STRATEGY: ${strategist.overall_strategy}
+
+SCORING: After your response, on a NEW LINE, add exactly this: [SCORE:X] where X is 1-10 rating of the candidate's PREVIOUS answer quality (1 = terrible, 10 = exceptional). For the first message (no previous answer), use [SCORE:5]. Example:
+Tell me about your experience with distributed systems.
+[SCORE:7]`;
 }
 
 export async function generateInterviewerResponse(
@@ -165,9 +170,9 @@ export async function generateInterviewerResponse(
     updateInterview(interviewId, { current_phase: nextPhase });
   }
 
-  // Get difficulty from the interview record
+  // Get difficulty from the interview record — use effective_difficulty for the prompt
   const interview = getInterviewBySession(sessionId);
-  const difficulty: InterviewDifficulty = (interview?.difficulty as InterviewDifficulty) || "realistic";
+  const difficulty: EffectiveDifficulty = (interview?.effective_difficulty as EffectiveDifficulty) || "realistic";
 
   const effectivePhase = nextPhase || currentPhase;
   const systemPrompt = buildSystemPrompt(scout, auditor, strategist, effectivePhase, difficulty);
@@ -203,6 +208,46 @@ export async function generateInterviewerResponse(
     nextPhase,
     getUsage: () => usage,
   };
+}
+
+/**
+ * Parse the [SCORE:X] tag from the end of an interviewer response.
+ * Returns the clean response text and the extracted score (or null if not found).
+ */
+export function parseScoreTag(content: string): { text: string; score: number | null } {
+  const match = content.match(/\[SCORE:(\d+)\]\s*$/);
+  if (!match) {
+    return { text: content, score: null };
+  }
+  const score = Math.min(10, Math.max(1, parseInt(match[1], 10)));
+  const text = content.slice(0, match.index).trimEnd();
+  return { text, score };
+}
+
+/**
+ * Compute adaptive difficulty shift based on recent quality scores.
+ * Returns the new effective difficulty, or null if no change.
+ */
+export function computeAdaptiveShift(
+  recentScores: number[],
+  currentDifficulty: EffectiveDifficulty
+): EffectiveDifficulty | null {
+  if (recentScores.length < 3) return null;
+
+  const last3 = recentScores.slice(-3);
+  const avg = last3.reduce((sum, s) => sum + s, 0) / last3.length;
+
+  const levels: EffectiveDifficulty[] = ["friendly", "realistic", "tough"];
+  const currentIdx = levels.indexOf(currentDifficulty);
+
+  if (avg >= 8 && currentIdx < levels.length - 1) {
+    return levels[currentIdx + 1];
+  }
+  if (avg <= 3 && currentIdx > 0) {
+    return levels[currentIdx - 1];
+  }
+
+  return null;
 }
 
 export function isInterviewComplete(messages: Message[]): boolean {

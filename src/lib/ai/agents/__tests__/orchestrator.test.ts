@@ -31,7 +31,7 @@ const mockAuditor = vi.mocked(runAuditor);
 const mockStrategist = vi.mocked(runStrategist);
 const mockCoach = vi.mocked(runCoach);
 const mockGetAnalyses = vi.mocked(getAnalysesBySession);
-const mockUpdateAnalysis = vi.mocked(updateAnalysis);
+const _mockUpdateAnalysis = vi.mocked(updateAnalysis);
 const mockUpdateSession = vi.mocked(updateSession);
 const mockCreateAnalysis = vi.mocked(createAnalysis);
 

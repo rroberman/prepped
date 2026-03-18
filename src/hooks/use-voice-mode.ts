@@ -166,7 +166,9 @@ export function useVoiceMode({
   }, [lang, onFinalTranscript]);
 
   // Keep ref in sync so speak callbacks can call latest startListening
-  startListeningRef.current = startListening;
+  useEffect(() => {
+    startListeningRef.current = startListening;
+  }, [startListening]);
 
   const stopListening = useCallback(() => {
     if (!isListeningRef.current || !recognitionRef.current) return;

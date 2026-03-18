@@ -109,15 +109,15 @@ describe("getSessionsByGroup", () => {
   });
 
   it("auto:domain:hash queries by company_domain + cv_hash where group_label IS NULL", () => {
-    const s1 = createSession("same cv", "cv.pdf", "https://example.com/job1");
-    const s2 = createSession("same cv", "cv.pdf", "https://example.com/job2");
-    const s3 = createSession("same cv", "cv.pdf", "https://example.com/job3");
-    updateSession(s3.id, { group_label: "labeled" });
+    const first = createSession("same cv", "cv.pdf", "https://example.com/job1");
+    createSession("same cv", "cv.pdf", "https://example.com/job2");
+    const labeled = createSession("same cv", "cv.pdf", "https://example.com/job3");
+    updateSession(labeled.id, { group_label: "labeled" });
 
-    const hash = s1.cv_hash!;
+    const hash = first.cv_hash!;
     const results = getSessionsByGroup(`auto:example.com:${hash}`);
     expect(results).toHaveLength(2);
-    expect(results.map((s) => s.id)).not.toContain(s3.id);
+    expect(results.map((s) => s.id)).not.toContain(labeled.id);
   });
 
   it("unknown prefix returns empty array", () => {
@@ -129,7 +129,7 @@ describe("getSessionsByGroup", () => {
 describe("deleteSession", () => {
   it("cascading delete removes session and all related records", () => {
     const session = createSession("cv", "cv.pdf", "https://example.com/job");
-    const analysis = createAnalysis(session.id, "scout");
+    createAnalysis(session.id, "scout");
     const interview = createInterview(session.id);
     createMessage(interview.id, "interviewer", "Hello", "warmup");
     createReport(session.id, interview.id, 8.5, "strong_hire", "{}");

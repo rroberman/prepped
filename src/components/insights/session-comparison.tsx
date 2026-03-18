@@ -62,28 +62,32 @@ export function SessionComparison({ sessionIdA, sessionIdB }: SessionComparisonP
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
+    let cancelled = false;
 
-    Promise.all([
-      fetch(`/api/report/${sessionIdA}`).then((r) => {
-        if (!r.ok) throw new Error("Failed to load report A");
-        return r.json();
-      }),
-      fetch(`/api/report/${sessionIdB}`).then((r) => {
-        if (!r.ok) throw new Error("Failed to load report B");
-        return r.json();
-      }),
-    ])
-      .then(([dataA, dataB]) => {
-        setReportA(dataA.report.report_data as ReportData);
-        setReportB(dataB.report.report_data as ReportData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
+    async function fetchReports() {
+      try {
+        const [resA, resB] = await Promise.all([
+          fetch(`/api/report/${sessionIdA}`),
+          fetch(`/api/report/${sessionIdB}`),
+        ]);
+        if (!resA.ok) throw new Error("Failed to load report A");
+        if (!resB.ok) throw new Error("Failed to load report B");
+        const [dataA, dataB] = await Promise.all([resA.json(), resB.json()]);
+        if (!cancelled) {
+          setReportA(dataA.report.report_data as ReportData);
+          setReportB(dataB.report.report_data as ReportData);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Unknown error");
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchReports();
+    return () => { cancelled = true; };
   }, [sessionIdA, sessionIdB]);
 
   if (loading) {

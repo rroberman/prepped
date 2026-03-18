@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { listSessions, getSessionTokenUsage } from "@/lib/db/queries";
+import { getSessionGroups } from "@/lib/insights";
 
 export async function GET() {
   const sessions = listSessions();
@@ -18,5 +19,7 @@ export async function GET() {
     return { ...session, tokenUsage: usage };
   });
 
-  return NextResponse.json({ sessions: sessionsWithUsage, model });
+  const groups = getSessionGroups();
+
+  return NextResponse.json({ sessions: sessionsWithUsage, groups, model });
 }

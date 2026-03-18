@@ -22,7 +22,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "tsx scripts/seed-session.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.79.0",

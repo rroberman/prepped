@@ -108,6 +108,7 @@ const mockInterview = (difficulty: string): Interview => ({
   id: "i1", session_id: "s1", status: "completed",
   current_phase: "closing", question_count: 5,
   difficulty: difficulty as Interview["difficulty"],
+  effective_difficulty: (difficulty === "adaptive" ? "realistic" : difficulty) as Interview["effective_difficulty"],
   started_at: "2024-01-01", ended_at: "2024-01-01",
 });
 

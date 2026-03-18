@@ -7,7 +7,7 @@ import {
   getMessagesByInterview,
   updateSession,
 } from "@/lib/db/queries";
-import { generateInterviewerResponse } from "@/lib/ai/interviewer";
+import { generateInterviewerResponse, parseScoreTag } from "@/lib/ai/interviewer";
 
 export async function POST(
   request: NextRequest,
@@ -31,7 +31,7 @@ export async function POST(
   let difficulty = "realistic";
   try {
     const body = await request.json();
-    if (body.difficulty && ["friendly", "realistic", "tough"].includes(body.difficulty)) {
+    if (body.difficulty && ["friendly", "realistic", "tough", "adaptive"].includes(body.difficulty)) {
       difficulty = body.difficulty;
     }
   } catch { /* no body or invalid JSON — use default */ }
@@ -53,8 +53,9 @@ export async function POST(
     if (chunk.content) fullContent += chunk.content;
   }
 
-  // Save the interviewer's opening message
-  const savedMessage = createMessage(interview.id, "interviewer", fullContent, "warmup");
+  // Parse score tag and save clean content
+  const { text: cleanContent, score } = parseScoreTag(fullContent);
+  const savedMessage = createMessage(interview.id, "interviewer", cleanContent, "warmup", undefined, undefined, score);
 
   return NextResponse.json({
     interview,

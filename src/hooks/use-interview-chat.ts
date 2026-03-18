@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import type { Message, InterviewPhase } from "@/types";
+import type { Message, InterviewPhase, EffectiveDifficulty } from "@/types";
 
 interface ChatState {
   messages: Message[];
@@ -9,6 +9,7 @@ interface ChatState {
   currentPhase: InterviewPhase;
   isComplete: boolean;
   error: string | null;
+  effectiveDifficulty: EffectiveDifficulty | null;
 }
 
 export function useInterviewChat(sessionId: string, difficulty?: string) {
@@ -18,6 +19,7 @@ export function useInterviewChat(sessionId: string, difficulty?: string) {
     currentPhase: "warmup",
     isComplete: false,
     error: null,
+    effectiveDifficulty: null,
   });
 
   const startInterview = useCallback(async () => {
@@ -34,6 +36,7 @@ export function useInterviewChat(sessionId: string, difficulty?: string) {
         ...s,
         messages: data.messages,
         currentPhase: data.interview.current_phase,
+        effectiveDifficulty: data.interview.effective_difficulty || null,
         isLoading: false,
       }));
     } catch (err) {
@@ -58,6 +61,7 @@ export function useInterviewChat(sessionId: string, difficulty?: string) {
         created_at: new Date().toISOString(),
         prompt_tokens: 0,
         completion_tokens: 0,
+        quality_score: null,
       };
 
       setState((s) => ({
@@ -93,6 +97,7 @@ export function useInterviewChat(sessionId: string, difficulty?: string) {
           created_at: new Date().toISOString(),
           prompt_tokens: 0,
           completion_tokens: 0,
+          quality_score: null,
         };
 
         setState((s) => ({
@@ -122,10 +127,22 @@ export function useInterviewChat(sessionId: string, difficulty?: string) {
                   }
                   return { ...s, messages: msgs };
                 });
+              } else if (data.type === "replace") {
+                // Replace full content (used to strip score tags)
+                interviewerContent = data.content;
+                setState((s) => {
+                  const msgs = [...s.messages];
+                  const last = msgs[msgs.length - 1];
+                  if (last.role === "interviewer") {
+                    msgs[msgs.length - 1] = { ...last, content: data.content };
+                  }
+                  return { ...s, messages: msgs };
+                });
               } else if (data.type === "done") {
                 setState((s) => ({
                   ...s,
                   currentPhase: data.phase || s.currentPhase,
+                  effectiveDifficulty: data.effectiveDifficulty || s.effectiveDifficulty,
                   isLoading: false,
                 }));
               } else if (data.type === "complete") {

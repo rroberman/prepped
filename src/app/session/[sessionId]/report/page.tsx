@@ -66,6 +66,7 @@ export default function ReportPage() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [tokenUsage, setTokenUsage] = useState<{ prompt_tokens: number; completion_tokens: number; total_tokens: number; tts_characters?: number } | null>(null);
   const [modelInfo, setModelInfo] = useState<{ provider: string; model: string } | null>(null);
+  const [interviewMeta, setInterviewMeta] = useState<{ difficulty: string; effective_difficulty: string; interviewerScores: number[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPrintMode, setIsPrintMode] = useState(false);
@@ -89,6 +90,7 @@ export default function ReportPage() {
       .then(([data, config]) => {
         setReport(data.report.report_data);
         setTokenUsage(data.tokenUsage || null);
+        setInterviewMeta(data.interviewMeta || null);
         setModelInfo(config);
         setLoading(false);
       })
@@ -286,11 +288,35 @@ export default function ReportPage() {
 
         {/* Per-question feedback */}
         <div>
-          <h2 className="text-lg font-semibold mb-4">Question-by-Question Breakdown</h2>
+          <h2 className="text-lg font-semibold mb-2">Question-by-Question Breakdown</h2>
+          {interviewMeta && interviewMeta.interviewerScores.length > 0 && (
+            <p className="text-xs text-muted mb-4 leading-relaxed max-w-3xl">
+              Each answer has two scores. The <span className="text-foreground font-medium">Live</span> score is the interviewer&apos;s real-time assessment during the interview. The <span className="text-foreground font-medium">Committee</span> score is the hiring committee&apos;s retrospective evaluation after reviewing the full interview. These can differ — a weak early answer might look better in context, or a seemingly good answer might not hold up under scrutiny.
+            </p>
+          )}
+          {interviewMeta?.difficulty === "adaptive" && (
+            <p className="text-xs text-purple-400 mb-4">
+              Adaptive difficulty: started at realistic
+              {interviewMeta.effective_difficulty !== "realistic" && (
+                <>, ended at {interviewMeta.effective_difficulty}</>
+              )}
+            </p>
+          )}
           <div className="space-y-4">
-            {report.question_feedback.map((feedback, i) => (
-              <QuestionCard key={i} feedback={feedback} index={i} forceExpanded={isPrintMode} />
-            ))}
+            {report.question_feedback.map((feedback, i) => {
+              // interviewer scores are offset by 1: score[0] is for Q1's answer (scored when generating Q2)
+              // The first score (from the opening message) is a default 5, skip it
+              const interviewerScore = interviewMeta?.interviewerScores?.[i + 1] ?? interviewMeta?.interviewerScores?.[i] ?? null;
+              return (
+                <QuestionCard
+                  key={i}
+                  feedback={feedback}
+                  index={i}
+                  forceExpanded={isPrintMode}
+                  interviewerScore={interviewerScore}
+                />
+              );
+            })}
           </div>
         </div>
 

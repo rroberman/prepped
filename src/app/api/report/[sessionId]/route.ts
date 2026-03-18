@@ -30,6 +30,13 @@ export async function GET(
   }
 
   const tokenUsage = getSessionTokenUsage(sessionId);
+  const interview = getInterviewBySession(sessionId);
+  const interviewMessages = interview ? getMessagesByInterview(interview.id) : [];
+
+  // Extract interviewer quality scores for dual scoring display
+  const interviewerScores = interviewMessages
+    .filter((m) => m.role === "interviewer" && m.quality_score != null)
+    .map((m) => m.quality_score as number);
 
   return NextResponse.json({
     report: {
@@ -37,5 +44,10 @@ export async function GET(
       report_data: JSON.parse(report.report_data),
     },
     tokenUsage,
+    interviewMeta: {
+      difficulty: interview?.difficulty || "realistic",
+      effective_difficulty: interview?.effective_difficulty || "realistic",
+      interviewerScores,
+    },
   });
 }

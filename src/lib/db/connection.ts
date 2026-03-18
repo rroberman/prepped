@@ -15,6 +15,7 @@ export function getDb(): Database.Database {
     migrateTtsTable(db);
     migrateSessionGroups(db);
     backfillSessionGroups(db);
+    migrateAdaptiveDifficulty(db);
   }
   return db;
 }
@@ -86,6 +87,16 @@ function backfillSessionGroups(db: Database.Database) {
       } catch { /* invalid URL */ }
     }
     update.run(cvHash, companyDomain, session.id);
+  }
+}
+
+function migrateAdaptiveDifficulty(db: Database.Database) {
+  const migrations = [
+    "ALTER TABLE interviews ADD COLUMN effective_difficulty TEXT DEFAULT 'realistic'",
+    "ALTER TABLE messages ADD COLUMN quality_score INTEGER",
+  ];
+  for (const sql of migrations) {
+    try { db.exec(sql); } catch { /* column already exists */ }
   }
 }
 

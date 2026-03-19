@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createTtsUsage } from "@/lib/db/queries";
+import { rateLimit } from "@/lib/rate-limit";
 
 function isOpenAIConfigured(): boolean {
   const provider = process.env.LLM_PROVIDER || "openai";
@@ -31,6 +32,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "OpenAI TTS not available" }, { status: 404 });
   }
 
+  const ip = request.headers.get("x-forwarded-for") || "unknown";
+  const { allowed } = rateLimit(ip, { maxRequests: 30, windowMs: 60_000 });
+  if (!allowed) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const { text, voice, sessionId } = await request.json();
   if (!text || typeof text !== "string") {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
@@ -54,7 +61,8 @@ export async function POST(request: NextRequest) {
 
   if (!response.ok) {
     const err = await response.text();
-    return NextResponse.json({ error: `TTS failed: ${err}` }, { status: 500 });
+    console.error("TTS API error:", err);
+    return NextResponse.json({ error: "Text-to-speech generation failed" }, { status: 500 });
   }
 
   // Track TTS usage

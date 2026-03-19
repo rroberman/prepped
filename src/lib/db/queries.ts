@@ -23,13 +23,22 @@ export function getSession(id: string): Session | null {
   return db.prepare(`SELECT * FROM sessions WHERE id = ?`).get(id) as Session | null;
 }
 
+const ALLOWED_SESSION_FIELDS = new Set(["status", "job_title", "company_name", "group_label"]);
+const ALLOWED_ANALYSIS_FIELDS = new Set(["status", "result", "error", "started_at", "completed_at", "prompt_tokens", "completion_tokens"]);
+const ALLOWED_INTERVIEW_FIELDS = new Set(["status", "current_phase", "question_count", "ended_at", "effective_difficulty"]);
+
+function buildUpdate(updates: Record<string, unknown>, allowed: Set<string>): { fields: string[]; values: unknown[] } {
+  const entries = Object.entries(updates).filter(([k, v]) => v !== undefined && allowed.has(k));
+  return {
+    fields: entries.map(([k]) => `${k} = ?`),
+    values: entries.map(([, v]) => v),
+  };
+}
+
 export function updateSession(id: string, updates: Partial<Pick<Session, "status" | "job_title" | "company_name" | "group_label">>) {
   const db = getDb();
-  const fields = Object.entries(updates)
-    .filter(([, v]) => v !== undefined)
-    .map(([k]) => `${k} = ?`);
+  const { fields, values } = buildUpdate(updates, ALLOWED_SESSION_FIELDS);
   if (fields.length === 0) return;
-  const values = Object.values(updates).filter((v) => v !== undefined);
   db.prepare(`UPDATE sessions SET ${fields.join(", ")}, updated_at = datetime('now') WHERE id = ?`).run(
     ...values,
     id
@@ -94,11 +103,8 @@ export function updateAnalysis(
   updates: Partial<Pick<Analysis, "status" | "result" | "error" | "started_at" | "completed_at" | "prompt_tokens" | "completion_tokens">>
 ) {
   const db = getDb();
-  const fields = Object.entries(updates)
-    .filter(([, v]) => v !== undefined)
-    .map(([k]) => `${k} = ?`);
+  const { fields, values } = buildUpdate(updates, ALLOWED_ANALYSIS_FIELDS);
   if (fields.length === 0) return;
-  const values = Object.values(updates).filter((v) => v !== undefined);
   db.prepare(`UPDATE analyses SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
 }
 
@@ -132,11 +138,8 @@ export function updateInterview(
   updates: Partial<Pick<Interview, "status" | "current_phase" | "question_count" | "ended_at" | "effective_difficulty">>
 ) {
   const db = getDb();
-  const fields = Object.entries(updates)
-    .filter(([, v]) => v !== undefined)
-    .map(([k]) => `${k} = ?`);
+  const { fields, values } = buildUpdate(updates, ALLOWED_INTERVIEW_FIELDS);
   if (fields.length === 0) return;
-  const values = Object.values(updates).filter((v) => v !== undefined);
   db.prepare(`UPDATE interviews SET ${fields.join(", ")} WHERE id = ?`).run(...values, id);
 }
 

@@ -22,5 +22,5 @@ export async function GET() {
       break;
   }
 
-  return NextResponse.json({ provider, model });
+  return NextResponse.json({ model });
 }

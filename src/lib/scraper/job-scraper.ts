@@ -1,4 +1,5 @@
 import * as cheerio from "cheerio";
+import { isPrivateHost } from "@/lib/url-validator";
 
 async function fetchPage(url: string): Promise<string> {
   const controller = new AbortController();
@@ -57,7 +58,18 @@ function extractBaseUrl(url: string): string {
   }
 }
 
+function validateUrl(url: string): void {
+  const parsed = new URL(url);
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    throw new Error("Only http/https URLs are allowed");
+  }
+  if (isPrivateHost(parsed.hostname)) {
+    throw new Error("URLs pointing to private/internal networks are not allowed");
+  }
+}
+
 export async function scrapeJobUrl(url: string): Promise<string> {
+  validateUrl(url);
   const html = await fetchPage(url);
   return extractText(html, [
     '[class*="job-description"]',
@@ -77,6 +89,7 @@ export async function scrapeCompanyContext(jobUrl: string): Promise<{
   about: string;
   engineering: string;
 }> {
+  validateUrl(jobUrl);
   const baseUrl = extractBaseUrl(jobUrl);
   if (!baseUrl) return { homepage: "", about: "", engineering: "" };
 

@@ -1,7 +1,10 @@
 import { Radar, ShieldAlert, Crosshair, Gavel, History } from "lucide-react";
 import { UploadForm } from "@/components/landing/upload-form";
 import { LandingHints } from "@/components/landing/landing-hints";
+import { DemoLanding } from "@/components/landing/demo-landing";
 import Link from "next/link";
+
+const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
 const features = [
   {
@@ -52,8 +55,7 @@ export default function LandingPage() {
             Upload your CV and a job listing. We{"'"}ll scrape the company, audit your resume,
             find your gaps, and run a realistic mock interview.
           </p>
-          <LandingHints />
-          <UploadForm />
+          {isDemo ? <DemoLanding /> : <><LandingHints /><UploadForm /></>}
         </section>
 
         <section className="pb-24">

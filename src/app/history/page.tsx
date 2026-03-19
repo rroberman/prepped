@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { HintList } from "@/components/ui/hint-banner";
 import { useHints } from "@/hooks/use-hints";
 import { getHistoryHints } from "@/lib/hints";
+import { DEMO_HISTORY_SESSIONS } from "@/lib/demo-data";
 import type { Session, SessionGroup, InterviewDifficulty } from "@/types";
 
 interface SessionWithUsage extends Session {
@@ -152,11 +153,13 @@ function SessionCard({
   );
 }
 
+const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 export default function HistoryPage() {
-  const [sessions, setSessions] = useState<SessionWithUsage[]>([]);
+  const [sessions, setSessions] = useState<SessionWithUsage[]>(isDemo ? DEMO_HISTORY_SESSIONS as unknown as SessionWithUsage[] : []);
   const [groups, setGroups] = useState<SessionGroup[]>([]);
-  const [model, setModel] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [model, setModel] = useState(isDemo ? "gpt-4o" : "");
+  const [loading, setLoading] = useState(!isDemo);
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
@@ -173,6 +176,8 @@ export default function HistoryPage() {
   const { hints, dismiss } = useHints(allHints);
 
   useEffect(() => {
+    if (isDemo) return;
+
     fetch("/api/sessions/list")
       .then((res) => res.json())
       .then((data) => {

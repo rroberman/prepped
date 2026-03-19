@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import type { AgentType } from "@/types";
+import { DEMO_AGENTS } from "@/lib/demo-data";
 
 interface AgentState {
   status: "pending" | "running" | "completed" | "failed";
@@ -24,12 +25,15 @@ const defaultAgents = (): AgentMap => ({
 });
 
 export function useAnalysisStream(sessionId: string) {
-  const [agents, setAgents] = useState<AgentMap>(defaultAgents);
-  const [isDone, setIsDone] = useState(false);
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  const [agents, setAgents] = useState<AgentMap>(isDemo ? DEMO_AGENTS : defaultAgents);
+  const [isDone, setIsDone] = useState(isDemo);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
+    if (isDemo) return;
+
     // Close any existing connection
     eventSourceRef.current?.close();
 

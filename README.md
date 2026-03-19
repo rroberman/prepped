@@ -24,6 +24,10 @@ This is not a generic "tell me about yourself" chatbot. The interviewer knows th
   <img src="public/screenshots/01-landing.png" alt="Upload your CV and job URL" width="720" />
 </p>
 
+## Live Demo
+
+**[Try the demo](https://rroberman.github.io/prepped/)** — no install, no API key. Browse a complete mock interview session with pre-generated agent analysis, a 10-message interview conversation, and a full hiring committee report. All data is hardcoded sample data, not a live system.
+
 ## Quick Start
 
 ```bash

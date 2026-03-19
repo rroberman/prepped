@@ -42,6 +42,7 @@ yarn-error.log*
 # dev scripts
 /scripts
 !/scripts/seed-session.ts
+!/scripts/build-demo.sh
 
 # docs
 /docs

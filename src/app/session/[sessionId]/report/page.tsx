@@ -25,6 +25,7 @@ import { useHints } from "@/hooks/use-hints";
 import { getReportHints } from "@/lib/hints";
 import { cn } from "@/lib/utils";
 import type { ReportData, InterviewDifficulty } from "@/types";
+import { DEMO_REPORT_DATA, DEMO_INTERVIEW_META, DEMO_TOKEN_USAGE } from "@/lib/demo-data";
 
 const decisionConfig = {
   strong_hire: { label: "STRONG HIRE", color: "text-success", bg: "bg-success/10", border: "border-success/30" },
@@ -64,13 +65,15 @@ function estimateCost(
   return total < 0.01 ? total.toFixed(4) : total.toFixed(2);
 }
 
+const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 export default function ReportPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
-  const [report, setReport] = useState<ReportData | null>(null);
-  const [tokenUsage, setTokenUsage] = useState<{ prompt_tokens: number; completion_tokens: number; total_tokens: number; tts_characters?: number } | null>(null);
-  const [modelInfo, setModelInfo] = useState<{ provider: string; model: string } | null>(null);
-  const [interviewMeta, setInterviewMeta] = useState<{ difficulty: string; effective_difficulty: string; interviewerScores: number[]; completedSessionCount?: number } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [report, setReport] = useState<ReportData | null>(isDemo ? DEMO_REPORT_DATA : null);
+  const [tokenUsage, setTokenUsage] = useState<{ prompt_tokens: number; completion_tokens: number; total_tokens: number; tts_characters?: number } | null>(isDemo ? DEMO_TOKEN_USAGE : null);
+  const [modelInfo, setModelInfo] = useState<{ provider: string; model: string } | null>(isDemo ? { provider: "demo", model: "gpt-4o" } : null);
+  const [interviewMeta, setInterviewMeta] = useState<{ difficulty: string; effective_difficulty: string; interviewerScores: number[]; completedSessionCount?: number } | null>(isDemo ? DEMO_INTERVIEW_META : null);
+  const [loading, setLoading] = useState(!isDemo);
   const [error, setError] = useState<string | null>(null);
   const [isPrintMode, setIsPrintMode] = useState(false);
 
@@ -83,6 +86,8 @@ export default function ReportPage() {
   }, []);
 
   useEffect(() => {
+    if (isDemo) return;
+
     Promise.all([
       fetch(`/api/report/${sessionId}`).then((res) => {
         if (!res.ok) throw new Error("Failed to load report");

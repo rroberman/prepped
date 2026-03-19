@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { Message, InterviewPhase, EffectiveDifficulty } from "@/types";
+import { DEMO_INTERVIEW_MESSAGES } from "@/lib/demo-data";
 
 interface ChatState {
   messages: Message[];
@@ -13,16 +14,18 @@ interface ChatState {
 }
 
 export function useInterviewChat(sessionId: string, difficulty?: string) {
+  const isDemo = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
   const [state, setState] = useState<ChatState>({
-    messages: [],
+    messages: isDemo ? DEMO_INTERVIEW_MESSAGES : [],
     isLoading: false,
-    currentPhase: "warmup",
-    isComplete: false,
+    currentPhase: isDemo ? "closing" : "warmup",
+    isComplete: isDemo,
     error: null,
-    effectiveDifficulty: null,
+    effectiveDifficulty: isDemo ? "tough" : null,
   });
 
   const startInterview = useCallback(async () => {
+    if (isDemo) return;
     setState((s) => ({ ...s, isLoading: true, error: null }));
     try {
       const res = await fetch(`/api/interview/${sessionId}/start`, {

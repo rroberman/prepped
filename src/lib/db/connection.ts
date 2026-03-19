@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import path from "path";
+import fs from "fs";
 import crypto from "crypto";
 
 let db: Database.Database | null = null;
@@ -8,6 +9,8 @@ export function getDb(): Database.Database {
   if (!db) {
     const dbPath = path.join(process.cwd(), "interview-studio.db");
     db = new Database(dbPath);
+    // Restrict DB file permissions (owner read/write only)
+    try { fs.chmodSync(dbPath, 0o600); } catch { /* may fail on Windows */ }
     db.pragma("journal_mode = WAL");
     db.pragma("foreign_keys = ON");
     initializeSchema(db);

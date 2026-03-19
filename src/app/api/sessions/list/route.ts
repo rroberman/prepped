@@ -19,8 +19,9 @@ export async function GET() {
     const interview = getInterviewBySession(session.id);
     const report = getReportBySession(session.id);
     const reportData = report?.report_data ? JSON.parse(report.report_data) : null;
+    const { cv_text: _omit, ...safeSession } = session;
     return {
-      ...session,
+      ...safeSession,
       tokenUsage: usage,
       interviewDifficulty: interview?.difficulty || null,
       reportDecision: reportData?.decision || null,
